@@ -7,6 +7,7 @@
 
     <!-- dependencies -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/underscore/underscore.js"></script>
     <script>
       // YOU DO NOT NEED TO EDIT THIS CODE
       if (!/(&|\?)username=/.test(window.location.search)) {
@@ -26,19 +27,13 @@
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
-      <form>
-        <label for="room">Room:</label>
-        <select>
-          <option value="room1">Room 1</option>
-          <option value="room2">Room 2</option>
-          <option value="room3">Room 3</option>
-          <option value="room4">Room 4</option>
-        </select><br><br>
-        <!-- <label for="message">Message:</label><br> -->
-        <input type="text">
-        <input type="submit">
-      </  form>
+    <form>
+    <input type="text"></input>
+    </form>
     </div>
+    <div id="roomSelect">
+    </div>
+    <input type="submit" id="send" class="submit">
     <div id="chats"></div>
   </body>
 </html>
