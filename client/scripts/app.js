@@ -18,32 +18,48 @@ app.send = function (message) {
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function (data) {
-      console.log(data);
+      // console.log(data);
       console.log('chatterbox: Message sent');
     },
     error: function (data) {
-      this.renderMessage(data);
+      // this.renderMessage(data);
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to send message', data);
     }
   });
 };
 
+
+var fetchData = {
+  order: '-createdAt',
+  limit: 20
+  //where: {roomname: 'All'}
+};
 app.fetch = function () {
+  
   $.ajax({
   // This is the url you should use to communicate with the parse API server.
     url: this.server,
     type: 'GET',
     // datatype: 'string',
-    data: {
-      order: '-createdAt',
-      limit: 20
-    },
+    data: fetchData,
     // contentType: 'application/json',
     success: function (data) {
+      app.clearRooms();
+      var rooms = new Set();
       data.results.forEach(function(ele) {
+        ele.text = _.escape(ele.text);
+        ele.username = _.escape(ele.username);
+        ele.roomname = _.escape(ele.roomname);
+        // ele.text = _.escape(ele.text);
+        if (!rooms.has(ele.roomname) && ele.roomname !== '') {
+          app.renderRoom(ele.roomname);
+          rooms.add(ele.roomname);
+        }
         app.renderMessage(ele);
+        
       });
+      app.clearRooms1();
       console.log(data.results);
       console.log('chatterbox: Message received');
     },
@@ -53,6 +69,7 @@ app.fetch = function () {
     }
   });
 };
+$(document).ready(app.fetch());
 
 app.clearMessages = function() {
   $('#chats').empty();
@@ -60,16 +77,28 @@ app.clearMessages = function() {
 
 app.renderMessage = function(message) {
   // $('#chats').prepend(`<div class="text">${message.text}</div>`);
-  $('#chats').prepend(`<div class="chat">
+  $('#chats').append(`<div class="chat">
                         <span class="username">${message.username}</span>
                         <br>
-                        <span>${message.text}</span>  
+                        <span class="message">${message.text}</span>  
                       </div>`);
   //$('#main').append(`<div class="username">${message.username}</div`);
 };
 
 app.renderRoom = function (roomName) {
-  $('#roomSelect').prepend(`<div class="room">${roomName}</div>`);
+  // $('#roomSelect').prepend(`<div class="room">${roomName}</div>`);
+  
+  $('select').prepend(`<option value="${roomName}">${roomName}</option>`);
+  
+  // console.log($('select').children());
+};
+
+app.clearRooms = function() {
+  $('#roomSelect').empty(); 
+};
+
+app.clearRooms1 = function() {
+  $('#roomSelect').append('<option value="new room" class="createRoom">Create Room</option>');
 };
 
 // app.handleUsernameClick = function() {  
@@ -82,41 +111,82 @@ app.renderRoom = function (roomName) {
 // }); 
 
 app.handleUsernameClick = function(event) {
+  var target = $(event.target);
+  target.toggleClass('friend');
   if (event.target.className === 'username') {
     event.target.className += ' friend';
   }
   
-  console.log(event.target.className);
+  if (event.currentTarget.nextElementSibling.nextElementSibling.className === 'message') {
+    event.currentTarget.nextElementSibling.nextElementSibling.className += ' friendMessage';
+  }
+  
   // event.target.addClass('friend');
   //node.addClass('friend');
 };
 
+// var currentRoom = 'Feed'; 
 app.handleSubmit = function(event) {
-
+  var message = {
+    username: window.name,
+    text: $('#message').val(),
+    roomname: $( '#roomSelect option:selected' ).text()
+  };
+  app.send(message);
+  app.clearMessages();
+  app.fetch();
   console.log(event);
-  // node.addClass('friend');
 };
  
-$(document).ready(app.fetch());
+
+
 
 $(document).on('click', '.username', function(event) {
   event.preventDefault();
   app.handleUsernameClick(event);
 }); 
 
+// $(document).on('click', '.message', function(event) {
+//   event.preventDefault();
+//   console.log(event.target);
+// }); 
+
 
 $(document).on('submit', '.submit', function(event) {
   event.preventDefault();
-  console.log(event.target);
+  // console.log(event.target);
   app.handleSubmit(event); 
 });
 
 $(document).on('click', '.submit', function(event) {
   event.preventDefault();
-
+  app.handleSubmit(event); 
+  // currentRoom = $( '#roomSelect option:selected' ).text();
+  // console.log($( '#roomSelect option:selected' ).text());
   console.log(event.target);
 });
 
+$(document).change('#roomSelect', function(event) {
+
+  if ($( '#roomSelect option:selected' ).text() === 'Create Room') {
+    var text = prompt('Room name: ');
+    app.renderRoom(text);
+  } else {
+    var roomNameObj = {roomname: $( '#roomSelect option:selected' ).text()};
+    fetchData['where'] = roomNameObj; 
+    app.clearMessages();
+    app.fetch();
+  }
+});
+
+// // This is different than e.currentTarget which would refer to the parent <ul> in this context
+// e.target.style.visibility = 'hidden';
+
+// $(document).on('click', '#createRoom', function(event) {
+//   event.preventDefault();
+//   var text = prompt('Room name: ');
+//   app.renderRoom(text);
+// });
 
 // $.ajax({
 // // This is the url you should use to communicate with the parse API server.
@@ -152,8 +222,6 @@ $(document).on('click', '.submit', function(event) {
 //   data: JSON.stringify(message),
 //   contentType: 'application/json',
 //   success: function (data) {
-//     $( '.result' ).html( data ); 
-//     console.log(data);
 //     console.log('chatterbox: Message sent');
 
 //   },

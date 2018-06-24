@@ -84,12 +84,15 @@ form input[type=text] {
 }
 
 .friend {
-    color: #fff;
-    background-color: #0090da;
+    background-color: lightblue;
 }
 
 .message {
-    padding: 5px;
-    margin-bottom: 5px;
-    background-color: #eee;
+/*    padding: 5px;
+    margin-bottom: 5px;*/
+    /*background-color: #eee;*/
+}
+
+.friendMessage {
+    font-weight: bold;
 }
